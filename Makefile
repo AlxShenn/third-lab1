@@ -1,12 +1,24 @@
-CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Istructures
+CXX      := g++
+CXXFLAGS := -std=c++17 -Wall -Wextra -Istructures
+TARGET   := dbms
 
-all: dbms
+SRCS := main.cpp commands.cpp \
+        structures/array.cpp \
+        structures/slist.cpp \
+        structures/dlist.cpp \
+        structures/stack.cpp \
+        structures/queue.cpp \
+        structures/blackredtree.cpp
 
-dbms: main.cpp commands.cpp $(wildcard structures/*.cpp) $(wildcard structures/*.h)
-	$(CXX) $(CXXFLAGS) main.cpp commands.cpp structures/*.cpp -o dbms
+.PHONY: all run clean
+
+all: $(TARGET)
+
+$(TARGET): $(SRCS)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET)
 
 clean:
-	rm -f dbms
-
-.PHONY: all clean
+	rm -f $(TARGET) *.o structures/*.o
