@@ -16,13 +16,13 @@ struct Slist {
 
 void FInitializeSlist( Slist* slist);
 void FPushHead( Slist* slist, const string& value);
-void FPushTail( Slist* slist, const string& value);
-void FPushBefore( Slist* slist, const string& value, const string& target);
-void FPushAfter(SlistNode* currentNode, const string& value);
+void FPushTail(Slist* slist, const string& value);
+void FPushBefore( Slist* slist, SlistNode* target, const string& value);
+void FPushAfter( SlistNode* currentNode, const string& value);
 
 void FDeleteHead( Slist* slist);
 void FDeleteTail(Slist* slist);
-void FDeleteBefore( Slist* slist, const string& target);
+void FDeleteBefore(Slist* slist, SlistNode* target);
 void FDeleteAfter(SlistNode* currentNode);
 void FDeleteValue(Slist* slist, const string& value);
 

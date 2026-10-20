@@ -6,13 +6,13 @@ void FInitializeSlist(Slist* slist) {
     slist->head = nullptr;
 }
 
-void FPushHead(Slist*& slist, const string& value) {
+void FPushHead(Slist* slist, const string& value) {
     SlistNode* newNode = new SlistNode{value, slist->head};
     slist->head = newNode;
 
 }
 
-void FPushTail(Slist*& slist, const string& value) {
+void FPushTail(Slist* slist, const string& value) {
     SlistNode* newNode = new SlistNode{value, nullptr};
     SlistNode* currentNode = slist->head;
     if (slist == nullptr) {
@@ -27,20 +27,37 @@ void FPushTail(Slist*& slist, const string& value) {
 
 }
 
-void FPushBefore(SlistNode* previousNode, const string& value) {
-    SlistNode* newNode = new SlistNode{value, previousNode->next};
-    previousNode->next = newNode;
-}
-
 void FPushAfter(SlistNode* currentNode, const string& value) {
     SlistNode* newNode = new SlistNode{value, currentNode->next};
     currentNode->next = newNode;
 }
 
-void FDeleteBefore(SlistNode* previousNode) {
-    SlistNode* nodeToDelete = previousNode->next;
-    previousNode->next = nodeToDelete->next;
-    delete nodeToDelete;
+void FPushBefore(Slist* slist, SlistNode* target, const string& value) {
+    if (target == nullptr || slist == nullptr) return;
+    if (slist->head == target) {
+        FPushHead(slist, value);
+        return;
+    }
+    SlistNode* prev = slist->head;
+    while (prev != nullptr && prev->next != target) {
+        prev = prev->next;
+    }
+    if (prev == nullptr) return;
+    FPushAfter(prev, value);
+}
+
+void FDeleteBefore(Slist* slist, SlistNode* target) {
+    if (slist == nullptr || slist->head == nullptr || slist->head == target) return;
+    if (slist->head->next == target) {
+        FDeleteHead(slist);
+        return;
+    }
+    SlistNode* prev = slist->head;
+    while (prev->next != nullptr && prev->next->next != target) {
+        prev = prev->next;
+    }
+    if (prev->next == nullptr || prev->next->next != target) return;
+    FDeleteAfter(prev);
 }
 
 void FDeleteAfter(SlistNode* currentNode) {
@@ -58,7 +75,7 @@ void FDeleteHead( Slist* slist) {
     delete nodeToDelete;
 }
 
-void FDeleteTailForSlist(Slist* slist) {
+void FDeleteTail(Slist* slist) {
     if (slist->head->next == nullptr) {
         FDeleteHead(slist);
         return;
