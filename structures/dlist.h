@@ -11,22 +11,27 @@ struct DlistNode {
     DlistNode* prev;
 };
 
-void DPushHead(DlistNode*& head, const string& value);
-void DPushTail(DlistNode*& head, const string& value);
-void DPushAfter(DlistNode* currentNode, const string& value);
-void DPushBefore(DlistNode* currentNode, const string& value);
+struct Dlist {
+    DlistNode* head;
+    DlistNode* tail;
+};
 
-void DDeleteHead(DlistNode*& head);
-void DDeleteTail(DlistNode*& head);
-void DDeleteAfter(DlistNode* currentNode);
-void DDeleteBefore(DlistNode* currentNode);
+void DPushHead(Dlist& dlist, const string& value);
+void DPushTail(Dlist& dlist, const string& value);
+void DPushAfter(Dlist& dlist, const string& value, const string& target);
+void DPushBefore(Dlist& dlist, const string& value, const string& target);
 
-void DPrintForward(DlistNode* head);
-void DPrintBackward(DlistNode* head);
+void DDeleteHead(Dlist& dlist);
+void DDeleteTail(Dlist& dlist);
+void DDeleteAfter(Dlist& dlist, const string& target);
+void DDeleteBefore(Dlist& dlist, const string& target);
 
-DlistNode* DFind(DlistNode* head, const string& value);
-void DDeleteValue(DlistNode*& head, const string& value);
+void DPrintForward(Dlist& dlist);
+void DPrintBackward(Dlist& dlist);
 
-void DFree(DlistNode*& head);
+bool DFind(Dlist& dlist, const string& value);
+void DDeleteValue(Dlist& dlist, const string& value);
+
+void DFree(Dlist& dlist);
 
 #endif

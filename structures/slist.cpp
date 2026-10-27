@@ -2,120 +2,156 @@
 
 #include <iostream>
 
-void FInitializeSlist(Slist* slist) {
-    slist->head = nullptr;
+void FInitializeSlist(Slist& slist) {
+    slist.head = nullptr;
 }
 
-void FPushHead(Slist* slist, const string& value) {
-    SlistNode* newNode = new SlistNode{value, slist->head};
-    slist->head = newNode;
-
-}
-
-void FPushTail(Slist* slist, const string& value) {
-    SlistNode* newNode = new SlistNode{value, nullptr};
-    SlistNode* currentNode = slist->head;
-    if (slist == nullptr) {
-        slist->head = newNode;
+void FPushHead(Slist& slist, const string& value) {
+    if (slist.head == nullptr) {
+        SlistNode* newNode = new SlistNode{value, nullptr};
+        slist.head = newNode;
         return;
     }
-    while(currentNode->next != nullptr) {
-        currentNode = currentNode->next;
-    }
-
-    currentNode->next = newNode;
-
+    SlistNode* newNode = new SlistNode{value, slist.head};
+    slist.head = newNode;
 }
 
-void FPushAfter(SlistNode* currentNode, const string& value) {
-    SlistNode* newNode = new SlistNode{value, currentNode->next};
-    currentNode->next = newNode;
-}
-
-void FPushBefore(Slist* slist, SlistNode* target, const string& value) {
-    if (target == nullptr || slist == nullptr) return;
-    if (slist->head == target) {
+void FPushTail(Slist& slist, const string& value) {
+    if (slist.head == nullptr) {
         FPushHead(slist, value);
         return;
     }
-    SlistNode* prev = slist->head;
-    while (prev != nullptr && prev->next != target) {
-        prev = prev->next;
+    SlistNode* current = slist.head;
+    while (current != nullptr) {
+        current = current->next;
     }
-    if (prev == nullptr) return;
-    FPushAfter(prev, value);
+    if (current != nullptr) {
+        SlistNode* newNode = new SlistNode{value, nullptr};
+        current->next = newNode;
+    }
 }
 
-void FDeleteBefore(Slist* slist, SlistNode* target) {
-    if (slist == nullptr || slist->head == nullptr || slist->head == target) return;
-    if (slist->head->next == target) {
+void FPushAfter(Slist& slist, const string& target, const string& value) {
+    if (slist.head == nullptr) return;
+    SlistNode* current = slist.head;
+    while (current != nullptr && current->text != target) {
+        current = current->next;
+    }
+    if (current != nullptr) {
+        SlistNode* newNode = new SlistNode{value, current->next};
+        current->next = newNode;
+    }
+}
+
+void FPushBefore(Slist& slist, const string& target, const string& value) {
+    if (slist.head == nullptr) return;
+    if (slist.head->text == target) {
+        FPushHead(slist, value);
+        return;
+    }
+    SlistNode* current = slist.head;
+    while (current->next != nullptr && current->next->text != target) {
+        current = current->next;
+    }
+    if (current->next != nullptr) {
+        SlistNode* newNode = new SlistNode{value, current->next};
+        current->next = newNode;
+    }
+}
+
+void FDeleteBefore(Slist& slist, const string& target) {
+    if (slist.head == nullptr) return;
+    if (slist.head->text == target) {
         FDeleteHead(slist);
         return;
     }
-    SlistNode* prev = slist->head;
-    while (prev->next != nullptr && prev->next->next != target) {
-        prev = prev->next;
+    SlistNode* current = slist.head;
+    while (current->next->next != nullptr && current->next->next->text != target) {
+        current = current->next;
     }
-    if (prev->next == nullptr || prev->next->next != target) return;
-    FDeleteAfter(prev);
+    if (current->next->next != nullptr) {
+        SlistNode* delNode = current->next;
+        current->next = delNode->next;
+        delete delNode;
+    }
 }
 
-void FDeleteAfter(SlistNode* currentNode) {
-    SlistNode* nodeToDelete = currentNode->next;
-    currentNode->next = nodeToDelete->next;
+void FDeleteAfter(Slist& slist, const string& target) {
+    if (slist.head == nullptr) return;
+    SlistNode* current = slist.head;
+    while (current != nullptr && current->text != target) {
+        current = current->next;
+    }
+    if (current != nullptr && current->next != nullptr) {
+        SlistNode* delNode = current->next;
+        current->next = delNode->next;
+        delete delNode;
+    }
+}
+
+void FDeleteHead( Slist& slist) {
+    if (slist.head == nullptr) {
+        return;
+    }
+    SlistNode* nodeToDelete = slist.head;
+    slist.head = slist.head->next;
     delete nodeToDelete;
 }
 
-void FDeleteHead( Slist* slist) {
-    if (slist->head == nullptr) {
-        return;
-    }
-    SlistNode* nodeToDelete = slist->head;
-    slist->head = slist->head->next;
-    delete nodeToDelete;
-}
-
-void FDeleteTail(Slist* slist) {
-    if (slist->head->next == nullptr) {
+void FDeleteTail(Slist& slist) {
+    if (slist.head == nullptr) return;
+    if (slist.head->next == nullptr) {
         FDeleteHead(slist);
         return;
     }
-    SlistNode* currentNode = slist->head;
-    while (currentNode->next->next != nullptr) {
-        currentNode = currentNode->next;
-    }
-    FDeleteAfter(currentNode);
-}
+    SlistNode* current = slist.head;
+    while (current->next != nullptr) current = current->next;
+    SlistNode* delNode = current->next;
+    current->next = nullptr;
+    delete delNode;
+}   
 
-void FDeleteValue(Slist* slist, const string& value) {
-    if (slist->head == nullptr) return;
-    if (slist->head->text == value) {
+void FDeleteValue(Slist& slist, const string& value) {
+    if (slist.head == nullptr) return;
+    if (slist.head->text == value) {
         FDeleteHead(slist);
         return;
     }
-    SlistNode* currentNode = slist->head;
-    while (currentNode->next != nullptr && currentNode->next->text != value) {
-        currentNode = currentNode->next;
-    }
-    if (currentNode->next != nullptr) {
-        FDeleteAfter(currentNode);
+    SlistNode* current = slist.head;
+    while (current->next != nullptr && current->next->text != value) current = current->next;
+
+    if (current->next != nullptr){
+        SlistNode* delNode = current->next;
+        current->next = delNode->next;
+        delete delNode;
     }
 }
 
-void FFind(Slist* slist, const string& value) {
-    SlistNode* currentNode = slist->head;
+bool FGet(Slist& slist, const string& target) {
+    if (slist.head == nullptr) return false;
+    SlistNode* currentNode = slist.head;
     while (currentNode != nullptr) {
-        if (currentNode->text == value) {
-            cout << value << "' index is " << currentNode << "\n";
-            return;
+        if (currentNode->text == target) {
+            return true;
         }
         currentNode = currentNode->next;
     }
-    cout << "Couldn't find " << value << endl;
+    return false;
 }
 
-void FFree(Slist* slist) {
-    while (slist->head != nullptr) {
+void FPrint(const Slist& slist) {
+    if (slist.head == nullptr) {
+        cout << "Slist is empty" << endl;
+        return;
+    }
+    for (SlistNode* currentNode = slist.head; currentNode != nullptr; currentNode = currentNode->next) {
+        cout << currentNode->text << " ";
+    }
+    cout << "\n";
+}
+
+void FFree(Slist& slist) {
+    while (slist.head != nullptr) {
         FDeleteHead(slist);
     }
 }
