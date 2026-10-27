@@ -1,3 +1,5 @@
-FLIST slist1 2
-6
-5
+ARRAY m1 1
+4
+ARRAY m2 0
+FLIST s1 1
+13

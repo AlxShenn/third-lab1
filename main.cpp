@@ -35,7 +35,7 @@ static const string FILE_NAME = "data.txt";
 
 struct ArrOfArrays { Array* arr; string name; };
 struct ArrOfSlists { Slist* arr; string name; };
-struct ArrOfDlists { DlistNode** arr; string name; };
+struct ArrOfDlists { Dlist* arr; string name; };
 struct ArrOfStacks { Stack* arr; string name; };
 struct ArrOfQueues { Queue* arr; string name; };
 struct ArrOfTrees { TreeNode** arr; string name; };
@@ -81,16 +81,16 @@ Slist* getSlist(const string& name) {
 		if (slists.items[i].name == name) return slists.items[i].arr;
 	if (slists.size == slists.capacity) regGrow(slists);
 	Slist* s = new Slist;
-	FInitializeSlist(s);
+	FInitializeSlist(*s);
 	slists.items[slists.size++] = {s, name};
 	return s;
 }
 
-DlistNode** getDlist(const string& name) {
+Dlist* getDlist(const string& name) {
 	for (size_t i = 0; i < dlists.size; ++i)
 		if (dlists.items[i].name == name) return dlists.items[i].arr;
 	if (dlists.size == dlists.capacity) regGrow(dlists);
-	DlistNode** d = new DlistNode*(nullptr);
+	Dlist* d = new Dlist;
 	dlists.items[dlists.size++] = {d, name};
 	return d;
 }
@@ -145,11 +145,11 @@ static void SaveAll() {
 	}
 
 	for (size_t i = 0; i < dlists.size; ++i) {
-		DlistNode* d = *dlists.items[i].arr;
+		Dlist* d = dlists.items[i].arr;
 		int count = 0;
-		for (DlistNode* n = d; n; n = n->next) count++;
+		for (DlistNode* n = d->head; n; n = n->next) count++;
 		f << "DLIST " << dlists.items[i].name << " " << count << "\n";
-		for (DlistNode* n = d; n; n = n->next) f << n->text << "\n";
+		for (DlistNode* n = d->head; n; n = n->next) f << n->text << "\n";
 	}
 
 	for (size_t i = 0; i < stacks.size; ++i) {
@@ -227,7 +227,7 @@ static void LoadAll() {
 					}
 				}
 			} else if (tag == "DLIST") {
-				DlistNode** dlist = getDlist(name);
+				Dlist* dlist = getDlist(name);
 				for (int i = 0; i < count; ++i) {
 					string s; getline(f, s);
 					if (dlist) DPushTail(*dlist, s);
@@ -316,16 +316,16 @@ int main() {
 			// --- ОДНОСВЯЗНЫЙ СПИСОК ---
 			case Command::FPUSHHEAD: {
 				Slist* slist = getSlist(dsName);
-				if (slist && in >> value) { slist->head = new SlistNode{value, slist->head}; cout << "-> " << value << endl; changed = true; }
+				if (slist && in >> value) {
+					FPushHead(*slist, value);
+					cout << "-> " << value << endl; changed = true; }
 				else cout << "No" << endl;
 				break;
 			}
 			case Command::FPUSHTAIL: {
 				Slist* slist = getSlist(dsName);
 				if (slist && in >> value) {
-					SlistNode* newNode = new SlistNode{value, nullptr};
-					if (!slist->head) slist->head = newNode;
-					else { SlistNode* n = slist->head; while (n->next) n = n->next; n->next = newNode; }
+					FPushTail(*slist, value);
 					cout << "-> " << value << endl; changed = true;
 				} else cout << "No" << endl;
 				break;
@@ -333,138 +333,131 @@ int main() {
 			case Command::FPUSHAFTER: {
 				Slist* slist = getSlist(dsName);
 				if (slist && in >> value >> target) {
-					SlistNode* n = slist->head; while (n && n->text != target) n = n->next;
-					if (n) { FPushAfter(n, value); cout << "-> " << value << endl; changed = true; } else cout << "No" << endl;
+					FPushAfter(*slist, target, value); cout << "-> " << value << endl; changed = true; 
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::FPUSHBEFORE: {
     			Slist* slist = getSlist(dsName);
     			if (slist && in >> value >> target) {
-        			SlistNode* n = slist->head; while (n && n->text != target) n = n->next;
-        			if (n) { FPushBefore(slist, n, value); cout << "-> " << value << endl; changed = true; } else cout << "No" << endl;
+        			FPushBefore(*slist, target, value); cout << "-> " << value << endl; changed = true;					
     			} else cout << "No" << endl;
     			break;
 			}
 			case Command::FDELHEAD: {
 				Slist* slist = getSlist(dsName);
-				if (slist && slist->head) { out = slist->head->text; FDeleteHead(slist); cout << "-> " << out << endl; changed = true; }
+				if (slist && slist->head) { out = slist->head->text; FDeleteHead(*slist); cout << "-> " << out << endl; changed = true; }
 				else cout << "No" << endl;
 				break;
 			}
 			case Command::FDELTAIL: {
 				Slist* slist = getSlist(dsName);
 				if (slist && slist->head) {
-					SlistNode* n = slist->head; while (n->next) n = n->next;
-					out = n->text; FDeleteTail(slist); cout << "-> " << out << endl; changed = true;
+					FDeleteTail(*slist);
+					cout << "-> Deleted" << endl; changed = true;
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::FDELAFTER: {
 				Slist* slist = getSlist(dsName);
-				if (slist && in >> target) {
-					SlistNode* n = slist->head; while (n && n->text != target) n = n->next;
-					if (n && n->next) { out = n->next->text; FDeleteAfter(n); cout << "-> " << out << endl; changed = true; } else cout << "No" << endl;
+				if (slist && in >> target && FGet(*slist, target)) {
+					FDeleteAfter(*slist, target);
+					cout << "-> Deleted" << endl; changed = true;
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::FDELBEFORE: {
     			Slist* slist = getSlist(dsName);
-    			if (slist && in >> target) {
-        			if (!slist->head || slist->head->text == target) { cout << "No" << endl; break; }
-        			SlistNode* n = slist->head; while (n && n->text != target) n = n->next;
-        			if (n) { FDeleteBefore(slist, n); cout << "-> " << target << endl; changed = true; } else cout << "No" << endl;
+    			if (slist && in >> target && FGet(*slist, target)) {
+        			FDeleteBefore(*slist, target);
+					cout << "-> Deleted" << endl; changed = true;
     			} else cout << "No" << endl;
     			break;
 			}
 			case Command::FDELVAL: {
 				Slist* slist = getSlist(dsName);
-				if (slist && in >> value) {
-					SlistNode* n = slist->head; while (n && n->text != value) n = n->next;
-					if (n) { FDeleteValue(slist, value); cout << "-> " << value << endl; changed = true; } else cout << "No" << endl;
+				if (slist && in >> value && FGet(*slist, value)) {
+					FDeleteValue(*slist, value);
+					cout << "-> " << value << endl; changed = true;
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::FGET: {
 				Slist* slist = getSlist(dsName);
 				if (slist && in >> value) {
-					SlistNode* n = slist->head; while (n && n->text != value) n = n->next;
-					if (n) cout << "-> " << value << endl; else cout << "No" << endl;
+					cout << ">> " << ((FGet(*slist, value)) ? "True" : "False") << endl;
 				} else cout << "No" << endl;
 				break;
 			}
 
 			// --- ДВУСВЯЗНЫЙ СПИСОК ---
 			case Command::LPUSHHEAD: {
-				DlistNode** dlist = getDlist(dsName);
+				Dlist* dlist = getDlist(dsName);
 				if (dlist && in >> value) { DPushHead(*dlist, value); cout << "-> " << value << endl; changed = true; }
 				else cout << "No" << endl;
 				break;
 			}
 			case Command::LPUSHTAIL: {
-				DlistNode** dlist = getDlist(dsName);
+				Dlist* dlist = getDlist(dsName);
 				if (dlist && in >> value) { DPushTail(*dlist, value); cout << "-> " << value << endl; changed = true; }
 				else cout << "No" << endl;
 				break;
 			}
 			case Command::LPUSHAFTER: {
-				DlistNode** dlist = getDlist(dsName);
-				if (dlist && in >> value >> target) {
-					DlistNode* n = DFind(*dlist, target);
-					if (n) { DPushAfter(n, value); cout << "-> " << value << endl; changed = true; } else cout << "No" << endl;
+				Dlist* dlist = getDlist(dsName);
+				if (dlist && in >> value >> target && DFind(*dlist, target)) {
+					DPushAfter(*dlist, value, target);
+					cout << "-> " << value << endl; changed = true;
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::LPUSHBEFORE: {
-				DlistNode** dlist = getDlist(dsName);
-				if (dlist && in >> value >> target) {
-					DlistNode* n = DFind(*dlist, target);
-					if (n) { if (n == *dlist) DPushHead(*dlist, value); else DPushBefore(n, value); cout << "-> " << value << endl; changed = true; }
-					else cout << "No" << endl;
+				Dlist* dlist = getDlist(dsName);
+				if (dlist && in >> value >> target && DFind(*dlist, target)) {
+					DPushBefore(*dlist, value, target);
+					cout << "-> " << value << endl; changed = true;
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::LDELHEAD: {
-				DlistNode** dlist = getDlist(dsName);
-				if (dlist && *dlist) { out = (*dlist)->text; DDeleteHead(*dlist); cout << "-> " << out << endl; changed = true; }
+				Dlist* dlist = getDlist(dsName);
+				if (dlist){
+					DDeleteHead(*dlist);
+					cout << "-> " << dlist->head->text << endl; changed = true;}
 				else cout << "No" << endl;
 				break;
 			}
 			case Command::LDELTAIL: {
-				DlistNode** dlist = getDlist(dsName);
-				if (dlist && *dlist) {
-					DlistNode* n = *dlist; while (n->next) n = n->next;
-					out = n->text; DDeleteTail(*dlist); cout << "-> " << out << endl; changed = true;
+				Dlist* dlist = getDlist(dsName);
+				if (dlist) {
+					DDeleteTail(*dlist); cout << "-> " << dlist->tail->text << endl; changed = true;
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::LDELAFTER: {
-				DlistNode** dlist = getDlist(dsName);
-				if (dlist && in >> target) {
-					DlistNode* n = DFind(*dlist, target);
-					if (n && n->next) { out = n->next->text; DDeleteAfter(n); cout << "-> " << out << endl; changed = true; } else cout << "No" << endl;
+				Dlist* dlist = getDlist(dsName);
+				if (dlist && in >> target && DFind(*dlist, target)) {
+					DDeleteAfter(*dlist, target);
+					cout << "-> Deleted" << endl; changed = true; 
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::LDELBEFORE: {
-				DlistNode** dlist = getDlist(dsName);
-				if (dlist && in >> target) {
-					DlistNode* n = DFind(*dlist, target);
-					if (n && n->prev) { out = n->prev->text; if (n->prev == *dlist) DDeleteHead(*dlist); else DDeleteBefore(n); cout << "-> " << out << endl; changed = true; }
-					else cout << "No" << endl;
+				Dlist* dlist = getDlist(dsName);
+				if (dlist && in >> target && DFind(*dlist, target)) {
+					DDeleteBefore(*dlist, target); cout << "-> Deleted" << endl; changed = true;
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::LDELVAL: {
-				DlistNode** dlist = getDlist(dsName);
-				if (dlist && in >> value) {
-					DlistNode* n = DFind(*dlist, value);
-					if (n) { DDeleteValue(*dlist, value); cout << "-> " << value << endl; changed = true; } else cout << "No" << endl;
+				Dlist* dlist = getDlist(dsName);
+				if (dlist && in >> value && DFind(*dlist, value)) {
+					DDeleteValue(*dlist, value); cout << "-> " << value << endl; changed = true; 
 				} else cout << "No" << endl;
 				break;
 			}
 			case Command::LGET: {
-				DlistNode** dlist = getDlist(dsName);
+				Dlist* dlist = getDlist(dsName);
 				if (dlist && in >> value) { if (DFind(*dlist, value)) cout << "-> " << value << endl; else cout << "No" << endl; }
 				else cout << "No" << endl;
 				break;
@@ -544,7 +537,7 @@ int main() {
 				if (cmdName == "PRINT") {
 					if (dsName == "array") { Array* arr = getArray(targetName); if(arr) MPrint(*arr); }
 					else if (dsName == "slist") { Slist* slist = getSlist(targetName); if(slist) { for (SlistNode* n = slist->head; n; n = n->next) cout << n->text << " "; cout << endl; } }
-					else if (dsName == "dlist") { DlistNode** dlist = getDlist(targetName); if(dlist) DPrintForward(*dlist); }
+					else if (dsName == "dlist") { Dlist* dlist = getDlist(targetName); if(dlist) DPrintForward(*dlist); }
 					else if (dsName == "stack") { Stack* stack = getStack(targetName); if(stack) SPrint(*stack); }
 					else if (dsName == "queue") { Queue* queue = getQueue(targetName); if(queue) QPrint(*queue); }
 					else if (dsName == "tree") {
@@ -573,7 +566,7 @@ int main() {
 	for (size_t i = 0; i < arrays.size; ++i) { MFree(*arrays.items[i].arr); delete arrays.items[i].arr; }
 	delete[] arrays.items;
 
-	for (size_t i = 0; i < slists.size; ++i) { FFree(slists.items[i].arr); delete slists.items[i].arr; }
+	for (size_t i = 0; i < slists.size; ++i) { FFree(*slists.items[i].arr); delete slists.items[i].arr; }
 	delete[] slists.items;
 
 	for (size_t i = 0; i < dlists.size; ++i) { DFree(*dlists.items[i].arr); delete dlists.items[i].arr; }
