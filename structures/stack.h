@@ -17,7 +17,7 @@ struct Stack {
 void SInitializeStack(Stack* stack);
 bool SIsEmptyStack(Stack* stack);
 void SPush(Stack* stack, const string& value);
-bool SPop(Stack& stack, string& out);
+void SPop(Stack& stack, string& valueToDelete);
 void SPrint(const Stack& stack);
 void SFree(Stack& stack);
 

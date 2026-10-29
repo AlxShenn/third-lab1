@@ -16,6 +16,8 @@ struct Dlist {
     DlistNode* tail;
 };
 
+void DInitialize(Dlist& dlist);
+
 void DPushHead(Dlist& dlist, const string& value);
 void DPushTail(Dlist& dlist, const string& value);
 void DPushAfter(Dlist& dlist, const string& value, const string& target);

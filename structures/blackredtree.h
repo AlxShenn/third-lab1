@@ -8,12 +8,14 @@ struct TreeNode {
     bool isRed;
     TreeNode* left;
     TreeNode* right;
+    TreeNode* parent;
 
-    TreeNode(int val, bool red = true)
-        : data(val), isRed(red), left(nullptr), right(nullptr) {}
+    TreeNode(int val, bool red = true, TreeNode* p = nullptr)
+        : data(val), isRed(red), left(nullptr), right(nullptr), parent(p) {}
 };
 
 bool isRed(TreeNode* node);
+string nodeStr(TreeNode* n);
 void rotateLeft(TreeNode*& root);
 void rotateRight(TreeNode*& root);
 void balance(TreeNode*& root);
@@ -30,6 +32,7 @@ void printPostOrder(TreeNode* root);
 bool printLevel(TreeNode* root, int level);
 void printBFS(TreeNode* root);
 void printAddresses(TreeNode* root);
+void printLeaves(TreeNode* root);
 
 void clearTree(TreeNode* root);
 

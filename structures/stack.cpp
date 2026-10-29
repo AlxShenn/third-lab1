@@ -17,15 +17,15 @@ void SPush( Stack* stack, const string& value) {
 	stack->head = newNode;
 }
 
-void SPop(Stack& stack) {
+// вывод удаленного значения перенесен в main
+void SPop(Stack& stack, string& valueToDelete) {
 	if (SIsEmptyStack(&stack)) {
 		return;
-
-	} else {
-		StackNode* newHead = stack.head->next;
-		delete stack.head;
-		stack.head = newHead;
 	}
+	StackNode* nodeToDelete = stack.head;
+	valueToDelete = nodeToDelete->text;
+	stack.head = nodeToDelete->next;
+	delete nodeToDelete;
 }
 
 void SPrint(const Stack& stack) {

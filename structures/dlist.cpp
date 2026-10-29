@@ -2,112 +2,137 @@
 
 #include <iostream>
 
+void DInitialize(Dlist& dlist) {
+    dlist.head = nullptr;
+    dlist.tail = nullptr;
+}
+
 void DPushHead(Dlist& dlist, const string& value) {
+    DlistNode* newNode = new DlistNode{value, dlist.head, nullptr};
     if (dlist.head == nullptr) {
-        DlistNode* newNode = new DlistNode{value, nullptr, nullptr};
         dlist.head = newNode;
         dlist.tail = newNode;
         return;
     }
-    DlistNode* newNode = new DlistNode{value, dlist.head, nullptr};
     dlist.head->prev = newNode;
     dlist.head = newNode;
 }
 
 void DPushTail(Dlist& dlist, const string& value) {
-    if (dlist.head == nullptr) {
-        DlistNode* newNode = new DlistNode{value, nullptr, nullptr};
+    DlistNode* newNode = new DlistNode{value, nullptr, dlist.tail};
+    if (dlist.tail == nullptr) {
         dlist.head = newNode;
         dlist.tail = newNode;
         return;
     }
-    DlistNode* newNode = new DlistNode{value, nullptr, dlist.tail};
     dlist.tail->next = newNode;
     dlist.tail = newNode;
 }
 
 void DPushAfter(Dlist& dlist, const string& value, const string& target) {
     if (dlist.head == nullptr) return;
-    if (dlist.tail->text == target) { 
-        DPushTail(dlist, value);
-        return;
-    }
+
     DlistNode* current = dlist.head;
     while (current != nullptr && current->text != target) {
         current = current->next;
     }
-    if (current != nullptr) {
-        DlistNode* newNode = new DlistNode{value, current->next, current};
-        current->next = newNode; newNode->next->prev = newNode;
+    if (current == nullptr) return;
+
+    DlistNode* nxt = current->next;
+    DlistNode* newNode = new DlistNode{value, nxt, current};
+    current->next = newNode;
+    if (nxt != nullptr) {
+        nxt->prev = newNode;
+    } else {
+        dlist.tail = newNode;
     }
 }
 
 void DPushBefore(Dlist& dlist, const string& value, const string& target) {
     if (dlist.head == nullptr) return;
-    if (dlist.head->text == target) { 
-        DPushHead(dlist, value);
-        return;
-    }
+
     DlistNode* current = dlist.head;
     while (current != nullptr && current->text != target) {
         current = current->next;
     }
-    if (current != nullptr) {
-        DlistNode* newNode = new DlistNode{value, current, current->prev};
-        current->prev = newNode; newNode->prev->next = newNode;
+    if (current == nullptr) return;
+
+
+    DlistNode* prv = current->prev;
+    DlistNode* newNode = new DlistNode{value, current, prv};
+    current->prev = newNode;
+    if (prv != nullptr) {
+        prv->next = newNode;
+    } else {
+        dlist.head = newNode;
     }
 }
 
 void DDeleteHead(Dlist& dlist) {
     if (dlist.head == nullptr) return;
+
     DlistNode* delNode = dlist.head;
-    delNode->next->prev = nullptr;
     dlist.head = delNode->next;
+
+    if (dlist.head != nullptr) {
+        dlist.head->prev = nullptr;
+    } else {
+        dlist.tail = nullptr;
+    }
     delete delNode;
 }
 
 void DDeleteTail(Dlist& dlist) {
-    if (dlist.head == nullptr) return;
+    if (dlist.tail == nullptr) return;
+
     DlistNode* delNode = dlist.tail;
-    delNode->prev->next = nullptr;
     dlist.tail = delNode->prev;
+    if (dlist.tail != nullptr) {
+        dlist.tail->next = nullptr;
+    } else {
+        dlist.head = nullptr;
+    }
     delete delNode;
 }
 
 void DDeleteAfter(Dlist& dlist, const string& target) {
     if (dlist.head == nullptr) return;
-    if (dlist.tail->text == target) return;
-    if (dlist.tail->prev->text == target) {
-        DDeleteTail(dlist);
-        return;
+
+    DlistNode* current = dlist.head;
+    while (current != nullptr && current->text != target) {
+        current = current->next;
     }
-    DlistNode* current = dlist.tail;
-    while (current->prev != nullptr && current->prev->text != target) {
-        current = current->prev;
+    if (current == nullptr || current->next == nullptr) return;
+
+    DlistNode* delNode = current->next;
+    DlistNode* nxt = delNode->next;
+    current->next = nxt;
+    if (nxt != nullptr) {
+        nxt->prev = current;
+    } else {
+        dlist.tail = current;
     }
-    if (current->prev != nullptr) {
-        current->prev->next = current->next;
-        current->next->prev = current->prev;
-        delete current;
-    }
+    delete delNode;
 }
 
 void DDeleteBefore(Dlist& dlist, const string& target) {
     if (dlist.head == nullptr) return;
-    if (dlist.head->text == target) return;
-    if (dlist.head->next->text == target) {
-        DDeleteHead(dlist);
-        return;
-    }
+
     DlistNode* current = dlist.head;
-    while (current->next != nullptr && current->next->text != target) {
+    while (current != nullptr && current->text != target) {
         current = current->next;
     }
-    if (current->next != nullptr) {
-        current->prev->next = current->next;
-        current->next->prev = current->prev;
-        delete current;
+    if (current == nullptr || current->prev == nullptr) return;
+
+    DlistNode* delNode = current->prev;
+    DlistNode* prv = delNode->prev;
+    current->prev = prv;
+    if (prv != nullptr) {
+        prv->next = current;
+    } else {
+        dlist.head = current;
     }
+    delete delNode;
 }
 
 void DPrintForward(Dlist& dlist) {
@@ -122,7 +147,7 @@ void DPrintForward(Dlist& dlist) {
 }
 
 void DPrintBackward(Dlist& dlist) {
-    if (dlist.head == nullptr) {
+    if (dlist.tail == nullptr) {
         cout << "Dlist is empty." << endl;
         return;
     }
@@ -133,8 +158,6 @@ void DPrintBackward(Dlist& dlist) {
 }
 
 bool DFind(Dlist& dlist, const string& value) {
-    if (dlist.head == nullptr) return false;
-    if (dlist.head->text == value || dlist.tail->text == value) return true;
     for (DlistNode* currentNode = dlist.head; currentNode != nullptr; currentNode = currentNode->next) {
         if (currentNode->text == value) return true;
     }
@@ -143,28 +166,33 @@ bool DFind(Dlist& dlist, const string& value) {
 
 void DDeleteValue(Dlist& dlist, const string& value) {
     if (dlist.head == nullptr) return;
-    if (dlist.head->text == value) {
-        DDeleteHead(dlist); return;
-    }
-    if (dlist.tail->text == value) {
-        DDeleteTail(dlist); return;
-    }
+
     DlistNode* current = dlist.head;
     while (current != nullptr && current->text != value) {
         current = current->next;
     }
-    if (current != nullptr) {
-        current->next->prev = current->prev;
+    if (current == nullptr) return;
+
+    if (current->prev != nullptr) {
         current->prev->next = current->next;
-        delete current;
+    } else {
+        dlist.head = current->next;
     }
+    if (current->next != nullptr) {
+        current->next->prev = current->prev;
+    } else {
+        dlist.tail = current->prev;
+    }
+    delete current;
 }
 
 void DFree(Dlist& dlist) {
-    if (dlist.head == nullptr) return;
-    while (dlist.head != nullptr) {
-        DlistNode* nodeToDelete = dlist.head;
-        dlist.head = dlist.head->next;
+    DlistNode* current = dlist.head;
+    while (current != nullptr) {
+        DlistNode* nodeToDelete = current;
+        current = current->next;
         delete nodeToDelete;
     }
+    dlist.head = nullptr;
+    dlist.tail = nullptr;
 }

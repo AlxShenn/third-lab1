@@ -25,6 +25,7 @@ void QPush(Queue* queue, const string& value) {
     }
 }
 
+// вывод удаленного значения перенесен в main
 void QPop(Queue* queue, string& valueToDelete) {
 	if (QIsEmptyQueue(queue)) {
 		return;
