@@ -91,6 +91,8 @@ Dlist* getDlist(const string& name) {
 		if (dlists.items[i].name == name) return dlists.items[i].arr;
 	if (dlists.size == dlists.capacity) regGrow(dlists);
 	Dlist* d = new Dlist;
+	// FIX: без инициализации head/tail содержат мусор
+	DInitialize(*d);
 	dlists.items[dlists.size++] = {d, name};
 	return d;
 }
@@ -273,7 +275,9 @@ int main() {
 		bool changed = false;
 
 		switch (cmd) {
-			// --- МАССИВ ---
+
+			
+			
 			case Command::MPUSH: {
 				Array* arr = getArray(dsName);
 				if (arr && in >> value) { MAddEnd(*arr, value); cout << "-> " << value << endl; changed = true; }
@@ -313,7 +317,8 @@ int main() {
 				break;
 			}
 
-			// --- ОДНОСВЯЗНЫЙ СПИСОК ---
+			
+
 			case Command::FPUSHHEAD: {
 				Slist* slist = getSlist(dsName);
 				if (slist && in >> value) {
@@ -390,7 +395,9 @@ int main() {
 				break;
 			}
 
-			// --- ДВУСВЯЗНЫЙ СПИСОК ---
+
+			
+
 			case Command::LPUSHHEAD: {
 				Dlist* dlist = getDlist(dsName);
 				if (dlist && in >> value) { DPushHead(*dlist, value); cout << "-> " << value << endl; changed = true; }
@@ -421,16 +428,21 @@ int main() {
 			}
 			case Command::LDELHEAD: {
 				Dlist* dlist = getDlist(dsName);
-				if (dlist){
+				if (dlist && dlist->head) {
+					out = dlist->head->text;
 					DDeleteHead(*dlist);
-					cout << "-> " << dlist->head->text << endl; changed = true;}
-				else cout << "No" << endl;
+					cout << "-> " << out << endl;
+					changed = true;
+				} else cout << "No" << endl;
 				break;
 			}
 			case Command::LDELTAIL: {
 				Dlist* dlist = getDlist(dsName);
-				if (dlist) {
-					DDeleteTail(*dlist); cout << "-> " << dlist->tail->text << endl; changed = true;
+				if (dlist && dlist->tail) {
+					out = dlist->tail->text;
+					DDeleteTail(*dlist);
+					cout << "-> " << out << endl;
+					changed = true;
 				} else cout << "No" << endl;
 				break;
 			}
@@ -463,7 +475,8 @@ int main() {
 				break;
 			}
 
-			// --- СТЕК ---
+
+
 			case Command::SPUSH: {
 				Stack* stack = getStack(dsName);
 				if (stack && in >> value) { SPush(stack, value); cout << "-> " << value << endl; changed = true; }
@@ -479,7 +492,8 @@ int main() {
 				break;
 			}
 
-			// --- ОЧЕРЕДЬ ---
+
+
 			case Command::QPUSH: {
 				Queue* queue = getQueue(dsName);
 				if (queue && in >> value) { QPush(queue, value); cout << "-> " << value << endl; changed = true; }
@@ -496,7 +510,8 @@ int main() {
 				break;
 			}
 
-			// --- ЧЕРНО-КРАСНОЕ ДЕРЕВО ---
+			
+
 			case Command::TINSERT: {
 				TreeNode** tree = getTree(dsName);
 				if (tree && in >> value) {
@@ -529,7 +544,8 @@ int main() {
 				break;
 			}
 
-			// --- ВЫВОД ---
+
+			
 			case Command::PRINT: {
 				string targetName;
 				if (!(in >> targetName)) { cout << "No" << endl; break; }
@@ -541,13 +557,14 @@ int main() {
 					else if (dsName == "stack") { Stack* stack = getStack(targetName); if(stack) SPrint(*stack); }
 					else if (dsName == "queue") { Queue* queue = getQueue(targetName); if(queue) QPrint(*queue); }
 					else if (dsName == "tree") {
-						TreeNode** tree = getTree(targetName);
-						if(tree) {
-							cout << "preorder: "; printPreOrder(*tree); cout << endl;
-							cout << "inorder: "; printInOrder(*tree); cout << endl;
-							cout << "postorder: "; printPostOrder(*tree); cout << endl;
-							cout << "bfs: "; printBFS(*tree);
-						}
+    					TreeNode** tree = getTree(targetName);
+    					if (tree) {
+        					cout << "preorder: ";  printPreOrder(*tree);  cout << endl;
+        					cout << "inorder: ";   printInOrder(*tree);   cout << endl;
+        					cout << "postorder: "; printPostOrder(*tree); cout << endl;
+        					cout << "bfs: ";       printBFS(*tree);
+        					cout << "leaves: ";    printLeaves(*tree); cout << endl;
+    					}
 					}
 					else cout << "No" << endl;
 				}
@@ -562,7 +579,8 @@ int main() {
 
 	SaveAll();
 
-	// Очистка памяти
+
+	
 	for (size_t i = 0; i < arrays.size; ++i) { MFree(*arrays.items[i].arr); delete arrays.items[i].arr; }
 	delete[] arrays.items;
 

@@ -1,5 +1,0 @@
-ARRAY m1 1
-4
-ARRAY m2 0
-FLIST s1 1
-13
