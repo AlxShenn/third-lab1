@@ -484,12 +484,14 @@ int main() {
 				break;
 			}
 			case Command::SPOP: {
-				Stack* stack = getStack(dsName);
-				if (stack && stack->head) {
-					out = stack->head->text; StackNode* del = stack->head; stack->head = del->next;
-					delete del; cout << "-> " << out << endl; changed = true;
-				} else cout << "No" << endl;
-				break;
+    			Stack* stack = getStack(dsName);
+    			if (stack && stack->head) {
+        			SPop(*stack);
+        			changed = true;
+    			} else {
+        			cout << "No" << endl;
+    			}
+    			break;
 			}
 
 
@@ -501,13 +503,14 @@ int main() {
 				break;
 			}
 			case Command::QPOP: {
-				Queue* queue = getQueue(dsName);
-				if (queue && queue->head) {
-					out = queue->head->text; QueueNode* del = queue->head; queue->head = del->next;
-					if (!queue->head) queue->tail = nullptr;
-					delete del; cout << "-> " << out << endl; changed = true;
-				} else cout << "No" << endl;
-				break;
+    			Queue* queue = getQueue(dsName);
+    			if (queue && queue->head) {
+        			QPop(queue);
+        			changed = true;
+    			} else {
+        			cout << "No" << endl;
+    			}
+    			break;
 			}
 
 			
