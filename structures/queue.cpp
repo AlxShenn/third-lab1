@@ -25,19 +25,21 @@ void QPush(Queue* queue, const string& value) {
     }
 }
 
-// вывод удаленного значения перенесен в main
-void QPop(Queue* queue, string& valueToDelete) {
-	if (QIsEmptyQueue(queue)) {
-		return;
-	}
-	QueueNode* nodeToDelete = queue->head;
-	valueToDelete = nodeToDelete->text;
-	queue->head = nodeToDelete->next;
-	if (queue->head == nullptr) {
-		queue->tail = nullptr;
-	}
-
+void QPop(Queue* queue) {
+    if (QIsEmptyQueue(queue)) {
+        cout << "No" << endl;
+        return;
+    }
+    
+    QueueNode* nodeToDelete = queue->head;
+    string out = nodeToDelete->text;
+    queue->head = nodeToDelete->next;
+    if (queue->head == nullptr) {
+        queue->tail = nullptr;
+    }
     delete nodeToDelete;
+    
+    cout << "-> " << out << endl;
 }
 
 void QPrint(const Queue& queue) {

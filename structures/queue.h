@@ -18,7 +18,7 @@ struct Queue{
 void QInitializeQueue(Queue* queue);
 bool QIsEmptyQueue(Queue* queue);
 void QPush(Queue* queue, const string& value);
-void QPop(Queue* queue, string& valueToDelete);
+void QPop(Queue* queue);
 void QPrint(const Queue& queue);
 void QFree(Queue& queue);
 
